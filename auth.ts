@@ -37,7 +37,6 @@ import { createStorage } from 'unstorage';
 import memoryDriver from 'unstorage/drivers/memory';
 import vercelKVDriver from 'unstorage/drivers/vercel-kv';
 import { UnstorageAdapter } from '@auth/unstorage-adapter';
-import { getOrCreateUser } from './contentful';
 
 const storage = createStorage({
   driver: process.env.VERCEL
@@ -58,13 +57,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: 'jwt' },
   secret: process.env.AUTH_SECRET,
   callbacks: {
-    async signIn({ account, profile }) {
-      if (account && account.provider === 'google' && profile?.email_verified) {
-        getOrCreateUser(profile?.email);
-        return true;
-      }
-      return true;
-    },
     authorized({ request, auth }) {
       const { pathname } = request.nextUrl;
       if (pathname === '/middleware-example') return !!auth;

@@ -2,23 +2,25 @@ import { createClient } from 'contentful-management';
 
 const LOCALE = 'en-US';
 const ENVIRONMENT_ID = 'master';
-const CONTENT_TYPE_ID = 'users';
-const { CF_SPACE_ID, CF_CMA_TOKEN } = process.env;
+const CONTENT_TYPE_ID = 'reports';
+
+const NEXT_PUBLIC_CF_SPACE_ID = process.env.NEXT_PUBLIC_CF_SPACE_ID;
+const NEXT_PUBLIC_CF_CMA_TOKEN = process.env.NEXT_PUBLIC_CF_CMA_TOKEN;
 
 const cmaClient = createClient(
   {
-    space: CF_SPACE_ID,
-    accessToken: CF_CMA_TOKEN,
+    space: NEXT_PUBLIC_CF_SPACE_ID,
+    accessToken: NEXT_PUBLIC_CF_CMA_TOKEN,
   },
   {
     type: 'plain',
   }
 );
 
-const createUser = async (email) => {
-  const createdUser = await cmaClient.entry.create(
+export const createReport = async (email, reportText) => {
+  const createdReport = await cmaClient.entry.create(
     {
-      spaceId: CF_SPACE_ID,
+      spaceId: NEXT_PUBLIC_CF_SPACE_ID,
       environmentId: ENVIRONMENT_ID,
       contentTypeId: CONTENT_TYPE_ID,
     },
@@ -27,29 +29,24 @@ const createUser = async (email) => {
         email: {
           [LOCALE]: email,
         },
+        reportText: {
+          [LOCALE]: reportText,
+        },
       },
     }
   );
 
   return {
-    id: createdUser.sys.id,
-    email,
+    id: createdReport.sys.id,
   };
 };
 
-export const getOrCreateUser = async (email) => {
-  const user = await cmaClient.entry.getMany({
-    spaceId: CF_SPACE_ID,
+export const getUserReports = async (email) => {
+  const reports = await cmaClient.entry.getMany({
+    spaceId: NEXT_PUBLIC_CF_SPACE_ID,
     environmentId: ENVIRONMENT_ID,
     'fields.email[match]': email,
   });
 
-  if (user.total === 1) {
-    return {
-      id: user.items[0].sys.id,
-      email,
-    };
-  }
-
-  return createUser(email);
+  console.log('reports - ', reports);
 };
